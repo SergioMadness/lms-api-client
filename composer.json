@@ -1,0 +1,15 @@
+{
+  "name": "professionalweb/lms-api-client",
+  "description": "Client for GetLMS API",
+  "type": "library",
+  "require": {
+    "php": "^8.1",
+    "guzzlehttp/guzzle": "^7.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "professionalweb\\api\\": "src/"
+    }
+  },
+  "minimum-stability": "stable"
+}
