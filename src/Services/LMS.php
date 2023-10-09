@@ -1,10 +1,13 @@
 <?php namespace professionalweb\api\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\HandlerStack;
 use professionalweb\api\Interfaces\Services\Courses;
 use professionalweb\api\Interfaces\Services\Profile;
 use professionalweb\api\Interfaces\Services\Attempts;
 use professionalweb\api\Services\Courses as CoursesService;
+use Psr\Http\Message\RequestInterface;
 
 class LMS
 {
@@ -14,7 +17,7 @@ class LMS
 
     private static Client $client;
 
-    private static $baseUrl = 'https://api.getlms.online/api/v2';
+    private static $baseUrl = 'https://api.getlms.online/api/v2/';
 
     public static function setClientId(string $clientId): void
     {
@@ -24,6 +27,11 @@ class LMS
     public static function setAuthToken(string $token): void
     {
         self::$authToken = $token;
+    }
+
+    public static function setBaseUrl(string $url): void
+    {
+        self::$baseUrl = $url;
     }
 
     public static function courses(): Courses
@@ -44,6 +52,22 @@ class LMS
     private static function getClient(): Client
     {
         if (!isset(self::$client)) {
+            $stack = new HandlerStack();
+            $stack->setHandler(new CurlHandler());
+            $stack->push(function (callable $handler) {
+                return function (
+                    RequestInterface $request,
+                    array            $options
+                ) use ($handler) {
+                    $query = $request->getUri()->getQuery();
+                    $request = $request->withUri(
+                        $request->getUri()->withQuery($query . (empty($query) ? '' : '&') . 'client_id=' . self::$clientId)
+                    );
+
+                    return $handler($request, $options);
+                };
+            });
+
             $headers = [
                 'Accept' => 'application/json',
             ];
@@ -52,11 +76,9 @@ class LMS
             }
             self::$client = new Client([
                 'base_uri' => self::$baseUrl,
-                'timeout'  => 3,
+                'timeout'  => 30,
                 'headers'  => $headers,
-                'query'    => [
-                    'client_id' => self::$clientId,
-                ],
+                'handler'  => $stack,
             ]);
         }
 
