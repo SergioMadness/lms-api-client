@@ -7,9 +7,15 @@ class CourseIndex implements ICourseIndex
 {
 
     public function __construct(
-        private array $items
+        private string $courseId,
+        private array  $items
     )
     {
+    }
+
+    public function getCourseId(): string
+    {
+        return $this->courseId;
     }
 
     /**

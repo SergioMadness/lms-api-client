@@ -11,4 +11,11 @@ interface CourseIndex
      * @return array
      */
     public function getChildren(): array;
+
+    /**
+     * Get course ID
+     *
+     * @return string
+     */
+    public function getCourseId(): string;
 }

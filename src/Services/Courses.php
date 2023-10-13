@@ -14,11 +14,11 @@ use professionalweb\api\Interfaces\Services\Courses as ICourses;
 
 class Courses implements ICourses
 {
-    protected const METHOD_CATALOG = 'courses';
+    protected const METHOD_CATALOG = 'api/v2/courses';
 
-    protected const METHOD_COURSE = 'courses/:id';
+    protected const METHOD_COURSE = 'api/v2/courses/:id';
 
-    protected const METHOD_COURSE_INDEX = 'courses/:id/index';
+    protected const METHOD_COURSE_INDEX = 'api/v2/courses/:id/index';
 
     public function __construct(
         private Client $client
@@ -34,6 +34,7 @@ class Courses implements ICourses
      *
      * @return Pagination
      * @throws GuzzleException
+     * @throws \Exception
      */
     public function get(int $limit = 10, int $offset = 0): Pagination
     {
@@ -46,6 +47,10 @@ class Courses implements ICourses
 
         $content = json_decode($response->getBody()->getContents(), true);
 
+        if ($response->getStatusCode() >= 400) {
+            throw new \Exception($content[0]['error'] ?? '', $response->getStatusCode());
+        }
+
         return new PaginationModel(array_map(function (array $item) {
             return (new Course($item['id'], $item['title']))
                 ->setAlias($item['alias'] ?? '')
@@ -56,11 +61,19 @@ class Courses implements ICourses
         }, $content['data'] ?? []), $content['metadata']['total'], $content['metadata']['currentPage'], $content['metadata']['ipp']);
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws \Exception
+     */
     public function model(string $id): ICourse
     {
         $response = $this->client->get(str_replace(':id', $id, self::METHOD_COURSE));
 
         $item = json_decode($response->getBody()->getContents(), true)['data'] ?? [];
+
+        if ($response->getStatusCode() >= 400) {
+            throw new \Exception($item[0]['error'] ?? '', $response->getStatusCode());
+        }
 
         return (new Course($item['id'], $item['title']))
             ->setAlias($item['alias'] ?? '')
@@ -70,13 +83,19 @@ class Courses implements ICourses
             ->setCover($item['cover']['big'] ?? '');
     }
 
+    /**
+     * @throws GuzzleException
+     */
     public function getIndex(string $id): ICourseIndex
     {
         $response = $this->client->get(str_replace(':id', $id, self::METHOD_COURSE_INDEX));
 
         $items = json_decode($response->getBody()->getContents(), true)['data'] ?? [];
+        if ($response->getStatusCode() >= 400) {
+            throw new \Exception($items[0]['error'] ?? '', $response->getStatusCode());
+        }
 
-        return new CourseIndex(array_map([$this, 'createIndexItem'], $items));
+        return new CourseIndex($id, array_map([$this, 'createIndexItem'], $items));
     }
 
     protected function createIndexItem(array $item): IndexItem
@@ -88,6 +107,7 @@ class Courses implements ICourses
             ->setPassed($item['isPassed'])
             ->setSuccessful($item['isSuccessful'])
             ->setTitle($item['label'])
+            ->setAlias($item['alias'])
             ->setChildren(array_map([$this, 'createIndexItem'], $item['children']));
     }
 }

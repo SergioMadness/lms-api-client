@@ -7,6 +7,8 @@ class IndexItem implements IIndexItem
 
     private string $id;
 
+    private string $alias;
+
     private string $title;
 
     private bool $available;
@@ -178,5 +180,25 @@ class IndexItem implements IIndexItem
     public function getChildren(): array
     {
         return $this->children;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAlias(): string
+    {
+        return $this->alias;
+    }
+
+    /**
+     * @param string $alias
+     *
+     * @return IndexItem
+     */
+    public function setAlias(string $alias): IndexItem
+    {
+        $this->alias = $alias;
+
+        return $this;
     }
 }
