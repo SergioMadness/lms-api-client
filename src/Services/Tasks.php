@@ -10,6 +10,10 @@ class Tasks implements ITasks
 {
     public const METHOD_GET_TASK = 'api/v2/courses/:courseId/tasks/:taskId';
 
+    public const METHOD_GET_CERTIFICATE_IMAGE = 'api/v2/certificates/:courseId/:taskId/image';
+
+    public const METHOD_GET_CERTIFICATE_PDF = 'api/v2/certificates/:courseId/:taskId/pdf';
+
     public function __construct(
         private Client $client
     )
@@ -50,5 +54,52 @@ class Tasks implements ITasks
             ->setSettings($content['settings'])
             ->setNextTask($content['nextTask'] !== null ? (new TaskModel())->setId($content['nextTask']['id'])->setAlias($content['nextTask']['alias']) : null)
             ->setPrevTask($content['prevTask'] !== null ? (new TaskModel())->setId($content['prevTask']['id'])->setAlias($content['prevTask']['alias']) : null);
+    }
+
+    /**
+     * Get path to certificate image
+     *
+     * @param string $courseId
+     * @param string $taskId
+     *
+     * @return string
+     */
+    public function getCertificateImage(string $courseId, string $taskId): string
+    {
+        return str_replace([
+            ':courseId',
+            ':taskId',
+        ], [
+            $courseId,
+            $taskId,
+        ], self::METHOD_GET_CERTIFICATE_IMAGE);
+    }
+
+    /**
+     * Get path to PDF with certificate
+     *
+     * @param string $courseId
+     * @param string $taskId
+     *
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getCertificatePdf(string $courseId, string $taskId): string
+    {
+        $response = $this->client->get(str_replace([
+            ':courseId',
+            ':taskId',
+        ], [
+            $courseId,
+            $taskId,
+        ], self::METHOD_GET_CERTIFICATE_PDF));
+
+        $content = json_decode($response->getBody()->getContents(), true)['data'] ?? [];
+
+        if ($response->getStatusCode() >= 400) {
+            throw new \Exception($content[0]['error'] ?? '', $response->getStatusCode());
+        }
+
+        return $content['pdf_path'];
     }
 }

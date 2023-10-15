@@ -3,6 +3,7 @@
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\CurlHandler;
+use professionalweb\api\Interfaces\Services\Comments as IComments;
 use professionalweb\api\Interfaces\Services\Registration;
 use Psr\Http\Message\RequestInterface;
 use professionalweb\api\Interfaces\Services\Tasks;
@@ -88,6 +89,14 @@ class LMS
     public static function storage(): IStorage
     {
         return new Storage(static::getClient());
+    }
+
+    /**
+     * @return IComments
+     */
+    public static function comments(): IComments
+    {
+        return new Comments(static::getClient());
     }
 
     private static function getClient(): Client
