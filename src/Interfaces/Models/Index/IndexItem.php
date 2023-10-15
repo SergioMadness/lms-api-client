@@ -13,6 +13,13 @@ interface IndexItem
     public function getId(): string;
 
     /**
+     * Get task type
+     *
+     * @return string
+     */
+    public function getType(): string;
+
+    /**
      * @return string
      */
     public function getAlias(): string;

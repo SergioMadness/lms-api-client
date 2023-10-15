@@ -7,6 +7,8 @@ class IndexItem implements IIndexItem
 
     private string $id;
 
+    private string $type;
+
     private string $alias;
 
     private string $title;
@@ -198,6 +200,29 @@ class IndexItem implements IIndexItem
     public function setAlias(string $alias): IndexItem
     {
         $this->alias = $alias;
+
+        return $this;
+    }
+
+    /**
+     * Get task type
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set task type
+     *
+     * @param string $type
+     * @return $this
+     */
+    public function setType(string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }

@@ -40,7 +40,7 @@ class Courses implements ICourses
     {
         $response = $this->client->get(self::METHOD_CATALOG, [
             'query' => [
-                'limit'  => $limit,
+                'limit' => $limit,
                 'offset' => $offset,
             ],
         ]);
@@ -108,6 +108,7 @@ class Courses implements ICourses
             ->setSuccessful($item['isSuccessful'])
             ->setTitle($item['label'])
             ->setAlias($item['alias'])
+            ->setType($item['type'])
             ->setChildren(array_map([$this, 'createIndexItem'], $item['children']));
     }
 }
