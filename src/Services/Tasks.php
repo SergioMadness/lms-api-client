@@ -5,6 +5,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use professionalweb\api\Interfaces\Models\Task;
 use professionalweb\api\Models\Task as TaskModel;
 use professionalweb\api\Interfaces\Services\Tasks as ITasks;
+use professionalweb\bot\Log;
 
 class Tasks implements ITasks
 {
@@ -63,16 +64,25 @@ class Tasks implements ITasks
      * @param string $taskId
      *
      * @return string
+     * @throws GuzzleException
      */
     public function getCertificateImage(string $courseId, string $taskId): string
     {
-        return str_replace([
+        $response = $this->client->get(str_replace([
             ':courseId',
             ':taskId',
         ], [
             $courseId,
             $taskId,
-        ], self::METHOD_GET_CERTIFICATE_IMAGE);
+        ], self::METHOD_GET_CERTIFICATE_IMAGE));
+
+        \professionalweb\bot\Log::info($response);
+
+        if ($response->getStatusCode() >= 400) {
+            throw new \Exception($content[0]['error'] ?? '', $response->getStatusCode());
+        }
+
+        return $response->getHeader('Location')[0] ?? '';
     }
 
     /**
